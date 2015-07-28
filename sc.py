@@ -28,8 +28,9 @@ jsd = json.loads(res.text)
 
 
 
-streamurl = 'https://api.soundcloud.com/tracks/' + str(jsd['id']) + 'stream&client_id=YOUR_CLIENT_ID'
+streamurl = 'https://api.soundcloud.com/tracks/' + str(jsd['id']) + '/stream?client_id=YOUR_CLIENT_ID'
 
+print streamurl
 #Test if we can get stream from track URL
 webbrowser.open(streamurl)
 #TODO: Get track name/artist info from JSON file
