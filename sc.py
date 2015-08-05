@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
-import sys, requests, os, re, json, webbrowser, time
+import sys, os, re, json
+import requests, eyeD3
 
 def strToFile(name):
     toretr = '_'.join(name.split(' '))
@@ -33,8 +34,8 @@ def downloadTrack(id_num):
     streamurl = 'https://api.soundcloud.com/tracks/' + str(jsobj['id']) + '/stream?client_id=YOUR_CLIENT_ID'
 
 #TODO: Get track name/artist info from JSON file, prepare info for new file
-    trackname = jsobj['title']
-    artist = jsobj['user']['username']
+    trackname = ''.join([i if ord(i) < 128 else '' for i in jsobj['title']])
+    artist = ''.join([i if ord(i) < 128 else '' for i in jsobj['user']['username']])
     approx_bytes = (jsobj['duration'] / 1000) * 16000 #approximation at 128 kbps
 
     filename = strToFile(trackname)
