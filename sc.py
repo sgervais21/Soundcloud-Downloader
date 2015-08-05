@@ -66,6 +66,13 @@ def downloadTrack(id_num):
             sys.stdout.write("\r{:.1%} Downloaded".format(dl/length))
             sys.stdout.flush()
         f.close()
+        tag = eyeD3.Tag()
+        tag.link(os.path.join(os.getcwd(), dirname, filename) + '.mp3')
+        tag.header.setVersion(eyeD3.ID3_V2_3)
+        tag.setTitle(trackname)
+        tag.setArtist(artist)
+        tag.setAlbum(artist + "'s Soundcloud")
+        tag.update()
         sys.stdout.write('\n\n')
         print "Download of " + trackname + " complete!"
         sys.stdout.write('\n')
