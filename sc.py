@@ -95,18 +95,24 @@ def downloadFavorites(username, id_num):
 
 
 if len(sys.argv) == 1:
-    print "Usage: ./sc.py <Soundcloud URL>"
-    print "       or"
-    print "       ./sc.py <username>"
-    sys.exit()
+    input_val = raw_input('''
+Please enter a soundcloud URL of the form: 
+    http://soundcloud.com/user/trackname
+    or
+    http://soundcloud.com/user/sets/playlist
+    
+or enter a user name.
 
+''')
+else:
+    input_val = sys.argv[1]
 playlist_regex = re.compile(r'^http(s)?://soundcloud.com/.*/sets/.*')
 urlregex = re.compile('^http(s)?://soundcloud.com/.*/.*')
-playlistmo = playlist_regex.search(sys.argv[1])
+playlistmo = playlist_regex.search(input_val)
 if playlistmo == None:
-    urlmo = urlregex.search(sys.argv[1])
+    urlmo = urlregex.search(input_val)
     if urlmo == None:
-        username = sys.argv[1]
+        username = input_val
         url = 'http://api.soundcloud.com/resolve?url=https://soundcloud.com/'               + username + '&client_id=YOUR_CLIENT_ID'
         playlist = False
         user = True
