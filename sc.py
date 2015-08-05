@@ -5,6 +5,7 @@ import sys, requests, os, re, json, webbrowser, time
 def strToFile(name):
     toretr = '_'.join(name.split(' '))
     #Fix annoying common naming convention (ex. artist_name_-_track_name)
+    toretr = re.sub(r'/', '-', toretr)
     return re.sub(r'_-_', '-', toretr)
 
 def fileSize(bytes):
@@ -26,7 +27,9 @@ def downloadTrack(id_num):
     
     
     jsobj = json.loads(res.text)
-
+    if jsobj["streamable"] == False:
+        print "\nCould not download " + jsobj['title'] + " because it isn't streamable :(\n"
+        return
     streamurl = 'https://api.soundcloud.com/tracks/' + str(jsobj['id']) + '/stream?client_id=YOUR_CLIENT_ID'
 
 #TODO: Get track name/artist info from JSON file, prepare info for new file
@@ -65,15 +68,28 @@ def downloadTrack(id_num):
         sys.stdout.write('\n\n')
         print "Download of " + trackname + " complete!"
         sys.stdout.write('\n')
-
-
-#TODO: Add functionality for playlists
-
+    else:
+        print '\n' + filename + '.mp3 already exists!'
 
 #TODO: Get URL from command line, confirm it is soundcloud URL
 
+def downloadFavorites(username, id_num):
+    fav_url = 'https://api.soundcloud.com/users/' + str(id_num) + '/favorites?client_id=YOUR_CLIENT_ID'
+    try:
+        res = requests.get(fav_url)
+        res.raise_for_status()
+    except:
+        print "Not valid user favorites playlist"
+        sys.exit()
+    jsobj = json.loads(res.text)
+    for i in jsobj:
+        downloadTrack(i['id'])
+
+
 if len(sys.argv) == 1:
     print "Usage: ./sc.py <Soundcloud URL>"
+    print "       or"
+    print "       ./sc.py <username>"
     sys.exit()
 
 playlist_regex = re.compile(r'^http(s)?://soundcloud.com/.*/sets/.*')
@@ -82,14 +98,18 @@ playlistmo = playlist_regex.search(sys.argv[1])
 if playlistmo == None:
     urlmo = urlregex.search(sys.argv[1])
     if urlmo == None:
-        print 'Not a valid SoundCloud Track URL'
-        sys.exit()
+        username = sys.argv[1]
+        url = 'http://api.soundcloud.com/resolve?url=https://soundcloud.com/'               + username + '&client_id=YOUR_CLIENT_ID'
+        playlist = False
+        user = True
     else:
         url = 'http://api.soundcloud.com/resolve?url=' + urlmo.group(0) +              '&client_id=YOUR_CLIENT_ID'
         playlist = False
+        user = False
 else:
     url = 'http://api.soundcloud.com/resolve?url=' + playlistmo.group(0) +                      '&client_id=YOUR_CLIENT_ID'
     playlist = True
+    user = False
 #TODO: Get access to JSON from URL
 
 try: 
@@ -100,8 +120,17 @@ except:
     sys.exit()
 
 jsd = json.loads(res.text)
-if playlist == False:
+if user == True:
+    print "Downloading " + username + "'s favorites!"
+    dirname = strToFile(username) + '_' + 'favorites'
+    if dirname not in os.listdir(os.getcwd()):
+        os.makedirs(os.path.join(os.getcwd(), dirname))
+    os.chdir(os.path.join(os.getcwd(), dirname))
+    downloadFavorites(username, jsd['id'])
+
+elif playlist == False:
     downloadTrack(jsd['id'])
+
 else:
     tracklist = jsd['tracks']
     for i in tracklist:
